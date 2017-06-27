@@ -19,6 +19,9 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.util.DisplayMetrics;
+
+import java.util.Stack;
 
 public class SimpleGameEngine extends Activity {
 
@@ -77,13 +80,19 @@ public class SimpleGameEngine extends Activity {
         Bitmap bitmapBob;
 
         // Bob starts off not moving
-        boolean isMoving = false;
+        boolean isMovingLeft = false;
+        boolean isMovingRight = false;
 
         // He can walk at 150 pixels per second
         float walkSpeedPerSecond = 150;
 
         // He starts 10 pixels from the left
         float bobXPosition = 10;
+
+
+        float screenHeight, screenWidth;
+
+        Stack<Integer> touchEventStack;
 
         // When the we initialize (call new()) on gameView
         // This special constructor method runs
@@ -100,6 +109,15 @@ public class SimpleGameEngine extends Activity {
             // Load Bob from his .png file
             bitmapBob = BitmapFactory.decodeResource(this.getResources(), R.drawable.bob);
 
+
+            // Get screen dimensions
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            screenHeight = displayMetrics.heightPixels;
+            screenWidth = displayMetrics.widthPixels;
+
+            // Initialise touch event stack
+            touchEventStack = new Stack<>();
         }
 
         @Override
@@ -134,8 +152,11 @@ public class SimpleGameEngine extends Activity {
 
             // If bob is moving (the player is touching the screen)
             // then move him to the right based on his target speed and the current fps.
-            if(isMoving){
+            if(isMovingRight){
                 bobXPosition = bobXPosition + (walkSpeedPerSecond / fps);
+            }
+            else if(isMovingLeft){
+                bobXPosition = bobXPosition - (walkSpeedPerSecond / fps);
             }
 
         }
@@ -197,25 +218,101 @@ public class SimpleGameEngine extends Activity {
         @Override
         public boolean onTouchEvent(MotionEvent motionEvent) {
 
-            switch (motionEvent.getAction() & MotionEvent.ACTION_MASK) {
+            // get pointer index from the event object
+            int pointerIndex = motionEvent.getActionIndex();
+
+            // get pointer ID
+            int pointerId = motionEvent.getPointerId(pointerIndex);
+
+
+            switch (motionEvent.getActionMasked()) {
 
                 // Player has touched the screen
                 case MotionEvent.ACTION_DOWN:
 
-                    // Set isMoving so Bob is moved in the update method
-                    isMoving = true;
+                    touchEventStack.push(pointerIndex);
+
+                    // Determine direction and set isMoving so Bob is moved in the update method
+                    if (motionEvent.getX(pointerIndex) > screenWidth/2){
+                        isMovingRight = true;
+                        isMovingLeft = false;
+                    }
+                    else{
+                        isMovingLeft = true;
+                        isMovingRight = false;
+                    }
+
 
                     break;
+
+                case MotionEvent.ACTION_POINTER_DOWN:
+
+                    touchEventStack.push(pointerIndex);
+
+                    // Determine direction and set isMoving so Bob is moved in the update method
+                    if (motionEvent.getX(pointerIndex) > screenWidth/2){
+                        isMovingRight = true;
+                        isMovingLeft = false;
+                    }
+                    else{
+                        isMovingLeft = true;
+                        isMovingRight = false;
+                    }
+
+
+                    break;
+
+                case MotionEvent.ACTION_POINTER_UP:
+
+                    this.remove(pointerIndex);
+
+                    int activePointerIndex = touchEventStack.peek();
+
+                    if (motionEvent.getX(activePointerIndex) > screenWidth/2){
+                        isMovingRight = true;
+                        isMovingLeft = false;
+                    }
+                    else{
+                        isMovingLeft = true;
+                        isMovingRight = false;
+                    }
+                    break;
+
+
 
                 // Player has removed finger from screen
                 case MotionEvent.ACTION_UP:
 
                     // Set isMoving so Bob does not move
-                    isMoving = false;
-
+                    isMovingLeft = false;
+                    isMovingRight = false;
                     break;
+
             }
             return true;
+        }
+
+        private Stack<Integer> remove(int id){
+
+            Stack<Integer> tmpStack = new Stack<>();
+
+            if (touchEventStack.isEmpty())
+                return null;
+
+            else {
+                for (int i = 0; i < touchEventStack.size(); i++){
+                    Integer element = touchEventStack.pop();
+                    if(element != id){
+                        tmpStack.push(element);
+                    }
+                }
+
+                for (int i = 0; i < tmpStack.size(); i++){
+                    touchEventStack.push(tmpStack.pop());
+                }
+
+                return touchEventStack;
+            }
         }
 
     }
