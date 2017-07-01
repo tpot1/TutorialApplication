@@ -21,6 +21,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.util.DisplayMetrics;
 
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Stack;
 
 public class SimpleGameEngine extends Activity {
@@ -84,15 +86,24 @@ public class SimpleGameEngine extends Activity {
         boolean isMovingRight = false;
 
         // He can walk at 150 pixels per second
-        float walkSpeedPerSecond = 150;
+        float walkSpeedPerSecond = 400;
 
-        // He starts 10 pixels from the left
-        float bobXPosition = 10;
+        float bobXPosition, bobYPosition;
 
+        int bobWidth = 140;
+        int bobHeight = 215;
 
         float screenHeight, screenWidth;
 
+        boolean dragging = false;
+
+        double dragThreshold;
+
+        float dashLength = 500;
+
         Stack<Integer> touchEventStack;
+
+        Map<Integer, XY> touchXY = new HashMap<>();
 
         // When the we initialize (call new()) on gameView
         // This special constructor method runs
@@ -107,7 +118,8 @@ public class SimpleGameEngine extends Activity {
             paint = new Paint();
 
             // Load Bob from his .png file
-            bitmapBob = BitmapFactory.decodeResource(this.getResources(), R.drawable.bob);
+            Bitmap rawBob = BitmapFactory.decodeResource(this.getResources(), R.drawable.bob);
+            bitmapBob = Bitmap.createScaledBitmap(rawBob, bobWidth, bobHeight, false);
 
 
             // Get screen dimensions
@@ -115,6 +127,11 @@ public class SimpleGameEngine extends Activity {
             getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             screenHeight = displayMetrics.heightPixels;
             screenWidth = displayMetrics.widthPixels;
+
+            bobXPosition = screenWidth/2 - bobWidth/2;
+            bobYPosition = screenHeight - (screenHeight/3) - bobHeight/2;
+
+            dragThreshold = Math.sqrt((screenWidth * screenWidth) + (screenHeight * screenHeight)) / 8;
 
             // Initialise touch event stack
             touchEventStack = new Stack<>();
@@ -183,7 +200,7 @@ public class SimpleGameEngine extends Activity {
                 canvas.drawText("FPS:" + fps, 20, 40, paint);
 
                 // Draw bob at bobXPosition, 200 pixels
-                canvas.drawBitmap(bitmapBob, bobXPosition, 200, paint);
+                canvas.drawBitmap(bitmapBob, bobXPosition, bobYPosition, paint);
 
                 // Draw everything to the screen
                 // and unlock the drawing surface
@@ -213,9 +230,7 @@ public class SimpleGameEngine extends Activity {
         }
 
 
-        // The SurfaceView class implements onTouchListener
-        // So we can override this method and detect screen touches.
-        @Override
+
         public boolean onTouchEvent(MotionEvent motionEvent) {
 
             // get pointer index from the event object
@@ -224,13 +239,18 @@ public class SimpleGameEngine extends Activity {
             // get pointer ID
             int pointerId = motionEvent.getPointerId(pointerIndex);
 
+            XY xy = new XY(motionEvent.getX(), motionEvent.getY());
+
+            XY lastXY = touchXY.get(pointerId);
+
 
             switch (motionEvent.getActionMasked()) {
 
                 // Player has touched the screen
                 case MotionEvent.ACTION_DOWN:
 
-                    touchEventStack.push(pointerIndex);
+                    touchEventStack.push(pointerId);
+                    touchXY.put(pointerId, xy);
 
                     // Determine direction and set isMoving so Bob is moved in the update method
                     if (motionEvent.getX(pointerIndex) > screenWidth/2){
@@ -242,12 +262,14 @@ public class SimpleGameEngine extends Activity {
                         isMovingRight = false;
                     }
 
+                    this.dragging = true;
 
                     break;
 
                 case MotionEvent.ACTION_POINTER_DOWN:
 
-                    touchEventStack.push(pointerIndex);
+                    touchEventStack.push(pointerId);
+                    touchXY.put(pointerId, xy);
 
                     // Determine direction and set isMoving so Bob is moved in the update method
                     if (motionEvent.getX(pointerIndex) > screenWidth/2){
@@ -259,14 +281,31 @@ public class SimpleGameEngine extends Activity {
                         isMovingRight = false;
                     }
 
+                    this.dragging = false;
 
                     break;
 
+
                 case MotionEvent.ACTION_POINTER_UP:
 
-                    this.remove(pointerIndex);
+                    touchXY.remove(pointerId);
+                    this.remove(pointerId);
 
-                    int activePointerIndex = touchEventStack.peek();
+                    int activePointerID = touchEventStack.peek();
+                    int activePointerIndex = motionEvent.findPointerIndex(activePointerID);
+
+                    /*if(checkDash(lastXY, xy)){
+                        this.dash(lastXY, xy);
+                        Log.d("TRP", "TRUE");
+                    }
+                    else{
+                        Log.d("TRP", "FALSE");
+                    }
+
+                    Log.d("TRP", "Old X,Y: " + lastXY.x + ", " + lastXY.y);
+                    Log.d("TRP", "New X,Y: " + xy.x + ", " + xy.y);*/
+
+                    this.dragging = false;
 
                     if (motionEvent.getX(activePointerIndex) > screenWidth/2){
                         isMovingRight = true;
@@ -280,12 +319,29 @@ public class SimpleGameEngine extends Activity {
 
 
 
-                // Player has removed finger from screen
+                // Player has removed all fingers from screen
                 case MotionEvent.ACTION_UP:
+
+                    touchXY.clear();
+                    touchEventStack.clear();
+
+                    if(checkDash(lastXY, xy)){
+                        this.dash(lastXY, xy);
+                        Log.d("TRP", "TRUE");
+                    }
+                    else{
+                        Log.d("TRP", "FALSE");
+                    }
+
+                    Log.d("TRP", "Old X,Y: " + lastXY.x + ", " + lastXY.y);
+                    Log.d("TRP", "New X,Y: " + xy.x + ", " + xy.y);
 
                     // Set isMoving so Bob does not move
                     isMovingLeft = false;
                     isMovingRight = false;
+
+                    this.dragging = false;
+
                     break;
 
             }
@@ -312,6 +368,49 @@ public class SimpleGameEngine extends Activity {
                 }
 
                 return touchEventStack;
+            }
+        }
+
+        private boolean checkDash(XY oldXY, XY newXY){
+            float dx = Math.abs(oldXY.x - newXY.x);
+            float dy = Math.abs(oldXY.y - newXY.y);
+
+            double dragDist = Math.sqrt((dx * dx) + (dy * dy));
+
+            return (dragDist > dragThreshold) && this.dragging;
+        }
+
+        private void dash(XY oldXY, XY newXY) {
+
+            float dx = Math.abs(oldXY.x - newXY.x);
+            float dy = Math.abs(oldXY.y - newXY.y);
+
+            float dashX = (dx / (dx + dy)) * dashLength;
+            float dashY = (dy / (dx + dy)) * dashLength;
+
+            if (newXY.x > oldXY.x) {
+                bobXPosition += dashX;
+            } else {
+                bobXPosition -= dashX;
+            }
+
+            if (newXY.y > oldXY.y) {
+                bobYPosition += dashY;
+            } else {
+                bobYPosition -= dashY;
+            }
+
+            this.dragging = false;
+        }
+
+
+        class XY {
+
+            public float x, y;
+
+            public XY(float x, float y){
+                this.x = x;
+                this.y = y;
             }
         }
 
