@@ -78,20 +78,7 @@ public class SimpleGameEngine extends Activity {
         // This is used to help calculate the fps
         private long timeThisFrame;
 
-        // Declare an object of type Bitmap
-        Bitmap bitmapBob;
-
-        // Bob starts off not moving
-        boolean isMovingLeft = false;
-        boolean isMovingRight = false;
-
-        // He can walk at 150 pixels per second
-        float walkSpeedPerSecond = 400;
-
-        float bobXPosition, bobYPosition;
-
-        int bobWidth = 140;
-        int bobHeight = 215;
+        Player bob;
 
         float screenHeight, screenWidth;
 
@@ -117,21 +104,20 @@ public class SimpleGameEngine extends Activity {
             ourHolder = getHolder();
             paint = new Paint();
 
-            // Load Bob from his .png file
-            Bitmap rawBob = BitmapFactory.decodeResource(this.getResources(), R.drawable.bob);
-            bitmapBob = Bitmap.createScaledBitmap(rawBob, bobWidth, bobHeight, false);
-
-
             // Get screen dimensions
             DisplayMetrics displayMetrics = new DisplayMetrics();
             getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
             screenHeight = displayMetrics.heightPixels;
             screenWidth = displayMetrics.widthPixels;
 
-            bobXPosition = screenWidth/2 - bobWidth/2;
-            bobYPosition = screenHeight - (screenHeight/3) - bobHeight/2;
+            float playerX = screenWidth/2 - Player.width/2;
+            float playerY = screenHeight - (screenHeight/3) - Player.length/2;
 
             dragThreshold = Math.sqrt((screenWidth * screenWidth) + (screenHeight * screenHeight)) / 8;
+
+
+            bob = new Player(playerX, playerY, this.getResources(), R.drawable.bob);
+
 
             // Initialise touch event stack
             touchEventStack = new Stack<>();
@@ -169,11 +155,11 @@ public class SimpleGameEngine extends Activity {
 
             // If bob is moving (the player is touching the screen)
             // then move him to the right based on his target speed and the current fps.
-            if(isMovingRight){
-                bobXPosition = bobXPosition + (walkSpeedPerSecond / fps);
+            if(bob.isMovingRight){
+                bob.x += (bob.walkSpeedPerSecond / fps);
             }
-            else if(isMovingLeft){
-                bobXPosition = bobXPosition - (walkSpeedPerSecond / fps);
+            else if(bob.isMovingLeft){
+                bob.x -= (bob.walkSpeedPerSecond / fps);
             }
 
         }
@@ -200,7 +186,7 @@ public class SimpleGameEngine extends Activity {
                 canvas.drawText("FPS:" + fps, 20, 40, paint);
 
                 // Draw bob at bobXPosition, 200 pixels
-                canvas.drawBitmap(bitmapBob, bobXPosition, bobYPosition, paint);
+                canvas.drawBitmap(bob.bitmap, bob.x, bob.y, paint);
 
                 // Draw everything to the screen
                 // and unlock the drawing surface
@@ -254,12 +240,12 @@ public class SimpleGameEngine extends Activity {
 
                     // Determine direction and set isMoving so Bob is moved in the update method
                     if (motionEvent.getX(pointerIndex) > screenWidth/2){
-                        isMovingRight = true;
-                        isMovingLeft = false;
+                        bob.isMovingRight = true;
+                        bob.isMovingLeft = false;
                     }
                     else{
-                        isMovingLeft = true;
-                        isMovingRight = false;
+                        bob.isMovingLeft = true;
+                        bob.isMovingRight = false;
                     }
 
                     this.dragging = true;
@@ -273,12 +259,12 @@ public class SimpleGameEngine extends Activity {
 
                     // Determine direction and set isMoving so Bob is moved in the update method
                     if (motionEvent.getX(pointerIndex) > screenWidth/2){
-                        isMovingRight = true;
-                        isMovingLeft = false;
+                        bob.isMovingRight = true;
+                        bob.isMovingLeft = false;
                     }
                     else{
-                        isMovingLeft = true;
-                        isMovingRight = false;
+                        bob.isMovingLeft = true;
+                        bob.isMovingRight = false;
                     }
 
                     this.dragging = false;
@@ -308,12 +294,12 @@ public class SimpleGameEngine extends Activity {
                     this.dragging = false;
 
                     if (motionEvent.getX(activePointerIndex) > screenWidth/2){
-                        isMovingRight = true;
-                        isMovingLeft = false;
+                        bob.isMovingRight = true;
+                        bob.isMovingLeft = false;
                     }
                     else{
-                        isMovingLeft = true;
-                        isMovingRight = false;
+                        bob.isMovingLeft = true;
+                        bob.isMovingRight = false;
                     }
                     break;
 
@@ -337,8 +323,8 @@ public class SimpleGameEngine extends Activity {
                     Log.d("TRP", "New X,Y: " + xy.x + ", " + xy.y);
 
                     // Set isMoving so Bob does not move
-                    isMovingLeft = false;
-                    isMovingRight = false;
+                    bob.isMovingLeft = false;
+                    bob.isMovingRight = false;
 
                     this.dragging = false;
 
@@ -389,15 +375,15 @@ public class SimpleGameEngine extends Activity {
             float dashY = (dy / (dx + dy)) * dashLength;
 
             if (newXY.x > oldXY.x) {
-                bobXPosition += dashX;
+                bob.x += dashX;
             } else {
-                bobXPosition -= dashX;
+                bob.x -= dashX;
             }
 
             if (newXY.y > oldXY.y) {
-                bobYPosition += dashY;
+                bob.y += dashY;
             } else {
-                bobYPosition -= dashY;
+                bob.y -= dashY;
             }
 
             this.dragging = false;
