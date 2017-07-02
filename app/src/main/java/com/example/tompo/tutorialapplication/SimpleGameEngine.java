@@ -79,6 +79,7 @@ public class SimpleGameEngine extends Activity {
         private long timeThisFrame;
 
         Player bob;
+        Platform platformMain;
 
         float screenHeight, screenWidth;
 
@@ -115,9 +116,11 @@ public class SimpleGameEngine extends Activity {
 
             dragThreshold = Math.sqrt((screenWidth * screenWidth) + (screenHeight * screenHeight)) / 8;
 
-
+            // Create player (bob)
             bob = new Player(playerX, playerY, this.getResources(), R.drawable.bob);
 
+            // Create bottom platform
+            platformMain = new Platform(screenWidth/8, 4 * screenHeight/5, 6 * screenWidth/8, screenHeight/10, this.getResources(), R.drawable.platform);
 
             // Initialise touch event stack
             touchEventStack = new Stack<>();
@@ -187,6 +190,10 @@ public class SimpleGameEngine extends Activity {
 
                 // Draw bob at bobXPosition, 200 pixels
                 canvas.drawBitmap(bob.bitmap, bob.x, bob.y, paint);
+
+                // Draw the main platform
+                canvas.drawBitmap(platformMain.bitmap, platformMain.x, platformMain.y, paint);
+
 
                 // Draw everything to the screen
                 // and unlock the drawing surface
