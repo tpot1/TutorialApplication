@@ -21,6 +21,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.util.DisplayMetrics;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Stack;
@@ -78,6 +79,8 @@ public class SimpleGameEngine extends Activity {
         // This is used to help calculate the fps
         private long timeThisFrame;
 
+        public ArrayList<SolidObject> solidObjects = new ArrayList<>();
+
         Player bob;
         Platform platformMain;
 
@@ -111,16 +114,21 @@ public class SimpleGameEngine extends Activity {
             screenHeight = displayMetrics.heightPixels;
             screenWidth = displayMetrics.widthPixels;
 
-            float playerX = screenWidth/2 - Player.width/2;
-            float playerY = screenHeight - (screenHeight/3) - Player.length/2;
+            float playerWidth = 140;
+            float playerLength = 215;
+
+            float playerX = screenWidth/2 - playerWidth/2;
+            float playerY = screenHeight - (screenHeight/3) - playerLength/2;
 
             dragThreshold = Math.sqrt((screenWidth * screenWidth) + (screenHeight * screenHeight)) / 8;
 
             // Create player (bob)
-            bob = new Player(playerX, playerY, this.getResources(), R.drawable.bob);
+            bob = new Player(playerX, playerY, playerWidth, playerLength, this.getResources(), R.drawable.bob);
 
             // Create bottom platform
             platformMain = new Platform(screenWidth/8, 4 * screenHeight/5, 6 * screenWidth/8, screenHeight/10, this.getResources(), R.drawable.platform);
+
+            solidObjects.add(platformMain);
 
             // Initialise touch event stack
             touchEventStack = new Stack<>();
@@ -375,6 +383,8 @@ public class SimpleGameEngine extends Activity {
 
         private void dash(XY oldXY, XY newXY) {
 
+            //XY realXY = bob.checkCollision(newXY.x, newXY.y, solidObjects);
+
             float dx = Math.abs(oldXY.x - newXY.x);
             float dy = Math.abs(oldXY.y - newXY.y);
 
@@ -394,17 +404,6 @@ public class SimpleGameEngine extends Activity {
             }
 
             this.dragging = false;
-        }
-
-
-        class XY {
-
-            public float x, y;
-
-            public XY(float x, float y){
-                this.x = x;
-                this.y = y;
-            }
         }
 
     }
