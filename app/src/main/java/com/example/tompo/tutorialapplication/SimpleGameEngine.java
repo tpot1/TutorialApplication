@@ -88,10 +88,6 @@ public class SimpleGameEngine extends Activity {
 
         boolean dragging = false;
 
-        double dragThreshold;
-
-        float dashLength = 500;
-
         Stack<Integer> touchEventStack;
 
         Map<Integer, XY> touchXY = new HashMap<>();
@@ -120,13 +116,11 @@ public class SimpleGameEngine extends Activity {
             float playerX = screenWidth/2 - playerWidth/2;
             float playerY = screenHeight - (screenHeight/3) - playerLength/2;
 
-            dragThreshold = Math.sqrt((screenWidth * screenWidth) + (screenHeight * screenHeight)) / 8;
-
             // Create player (bob)
-            bob = new Player(playerX, playerY, playerWidth, playerLength, this.getResources(), R.drawable.bob);
+            bob = new Player(playerX, playerY, playerWidth, playerLength, this.getResources(), R.drawable.bob, (Math.sqrt((screenWidth * screenWidth) + (screenHeight * screenHeight)) / 8));
 
             // Create bottom platform
-            platformMain = new Platform(screenWidth/8, 4 * screenHeight/5, 6 * screenWidth/8, screenHeight/10, this.getResources(), R.drawable.platform);
+            platformMain = new Platform(screenWidth/8, 4 * screenHeight/5, 6 * screenWidth/8, screenHeight/10, this.getResources(), R.drawable.platform_test);
 
             solidObjects.add(platformMain);
 
@@ -166,12 +160,17 @@ public class SimpleGameEngine extends Activity {
 
             // If bob is moving (the player is touching the screen)
             // then move him to the right based on his target speed and the current fps.
-            if(bob.isMovingRight){
+            if(bob.isDashing){
+                bob.dash(fps);
+            }
+            else if(bob.isMovingRight){
                 bob.x += (bob.walkSpeedPerSecond / fps);
             }
             else if(bob.isMovingLeft){
                 bob.x -= (bob.walkSpeedPerSecond / fps);
             }
+
+
 
         }
 
@@ -295,17 +294,6 @@ public class SimpleGameEngine extends Activity {
                     int activePointerID = touchEventStack.peek();
                     int activePointerIndex = motionEvent.findPointerIndex(activePointerID);
 
-                    /*if(checkDash(lastXY, xy)){
-                        this.dash(lastXY, xy);
-                        Log.d("TRP", "TRUE");
-                    }
-                    else{
-                        Log.d("TRP", "FALSE");
-                    }
-
-                    Log.d("TRP", "Old X,Y: " + lastXY.x + ", " + lastXY.y);
-                    Log.d("TRP", "New X,Y: " + xy.x + ", " + xy.y);*/
-
                     this.dragging = false;
 
                     if (motionEvent.getX(activePointerIndex) > screenWidth/2){
@@ -326,8 +314,28 @@ public class SimpleGameEngine extends Activity {
                     touchXY.clear();
                     touchEventStack.clear();
 
-                    if(checkDash(lastXY, xy)){
-                        this.dash(lastXY, xy);
+                    if(bob.checkDash(lastXY, xy) && this.dragging){
+                        this.dragging = false;
+                        bob.isDashing = true;
+
+                        // Calculate how far to dash in both X and Y direction
+                        float dx = Math.abs(lastXY.x - xy.x);
+                        float dy = Math.abs(lastXY.y - xy.y);
+
+                        if(xy.x > lastXY.x){
+                            bob.totalDashX = (dx / (dx + dy)) * bob.dashLength;
+                        }
+                        else{
+                            bob.totalDashX = -(dx / (dx + dy)) * bob.dashLength;
+                        }
+
+                        if(xy.y > lastXY.y){
+                            bob.totalDashY = (dy / (dx + dy)) * bob.dashLength;
+                        }
+                        else{
+                            bob.totalDashY = -(dy / (dx + dy)) * bob.dashLength;
+                        }
+
                         Log.d("TRP", "TRUE");
                     }
                     else{
@@ -344,6 +352,17 @@ public class SimpleGameEngine extends Activity {
                     this.dragging = false;
 
                     break;
+
+                case MotionEvent.ACTION_MOVE:
+
+                    if(bob.checkDash(lastXY, xy)){
+
+                        bob.isMovingLeft = false;
+                        bob.isMovingRight = false;
+
+                        Log.d("TRP", "TRUE");
+                    }
+
 
             }
             return true;
@@ -370,40 +389,6 @@ public class SimpleGameEngine extends Activity {
 
                 return touchEventStack;
             }
-        }
-
-        private boolean checkDash(XY oldXY, XY newXY){
-            float dx = Math.abs(oldXY.x - newXY.x);
-            float dy = Math.abs(oldXY.y - newXY.y);
-
-            double dragDist = Math.sqrt((dx * dx) + (dy * dy));
-
-            return (dragDist > dragThreshold) && this.dragging;
-        }
-
-        private void dash(XY oldXY, XY newXY) {
-
-            //XY realXY = bob.checkCollision(newXY.x, newXY.y, solidObjects);
-
-            float dx = Math.abs(oldXY.x - newXY.x);
-            float dy = Math.abs(oldXY.y - newXY.y);
-
-            float dashX = (dx / (dx + dy)) * dashLength;
-            float dashY = (dy / (dx + dy)) * dashLength;
-
-            if (newXY.x > oldXY.x) {
-                bob.x += dashX;
-            } else {
-                bob.x -= dashX;
-            }
-
-            if (newXY.y > oldXY.y) {
-                bob.y += dashY;
-            } else {
-                bob.y -= dashY;
-            }
-
-            this.dragging = false;
         }
 
     }
