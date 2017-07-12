@@ -110,14 +110,8 @@ public class SimpleGameEngine extends Activity {
             screenHeight = displayMetrics.heightPixels;
             screenWidth = displayMetrics.widthPixels;
 
-            float playerWidth = 140;
-            float playerLength = 215;
-
-            float playerX = screenWidth/2 - playerWidth/2;
-            float playerY = screenHeight - (screenHeight/3) - playerLength/2;
-
             // Create player (bob)
-            bob = new Player(playerX, playerY, playerWidth, playerLength, this.getResources(), R.drawable.bob, (Math.sqrt((screenWidth * screenWidth) + (screenHeight * screenHeight)) / 8));
+            bob = new Player(screenWidth, screenHeight, this.getResources(), R.drawable.bob_test);
 
             // Create bottom platform
             platformMain = new Platform(screenWidth/8, 4 * screenHeight/5, 6 * screenWidth/8, screenHeight/10, this.getResources(), R.drawable.platform_test);
@@ -161,13 +155,13 @@ public class SimpleGameEngine extends Activity {
             // If bob is moving (the player is touching the screen)
             // then move him to the right based on his target speed and the current fps.
             if(bob.isDashing){
-                bob.dash(fps);
+                bob.dash(fps, solidObjects);
             }
             else if(bob.isMovingRight){
-                bob.x += (bob.walkSpeedPerSecond / fps);
+                bob.move(new XY(bob.x + (bob.walkSpeedPerSecond / fps), bob.y), solidObjects);
             }
             else if(bob.isMovingLeft){
-                bob.x -= (bob.walkSpeedPerSecond / fps);
+                bob.move(new XY(bob.x - (bob.walkSpeedPerSecond / fps), bob.y), solidObjects);
             }
 
 

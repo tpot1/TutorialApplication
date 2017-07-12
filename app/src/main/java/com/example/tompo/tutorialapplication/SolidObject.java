@@ -5,6 +5,7 @@ package com.example.tompo.tutorialapplication;
  */
 
 
+
 public abstract class SolidObject{
 
     public float x, y, width, length;
@@ -21,10 +22,10 @@ public abstract class SolidObject{
     }
 
     public void updateVertices(){
-        vertices = new XY[] {new XY(x,y), new XY(x + width, y), new XY(x + width, y + length), new XY(x, y + length) };
+        vertices = new XY[] {new XY(x,y), new XY(x + width, y), new XY(x + width, y - length), new XY(x, y - length) };
     }
 
-    public boolean contains(float x, float y){
+    /*public boolean contains(float x, float y){
         updateVertices();
 
         int i;
@@ -37,6 +38,36 @@ public abstract class SolidObject{
             }
         }
         return result;
-    }
+    }*/
 
+    public boolean contains(float x, float y) {
+        int n = vertices.length;
+        boolean inside = false;
+
+        float p1x = vertices[0].x;
+        float p1y = vertices[0].y;
+
+        for (int i = 0; i < n + 1; i++) {
+            float p2x = vertices[i % n].x;
+            float p2y = vertices[i % n].y;
+
+            if (y > Math.min(p1y, p2y)) {
+                if (y <= Math.max(p1y, p2y)) {
+                    if (x <= Math.max(p1x, p2x)) {
+                        if (p1y != p2y) {
+                            float xints = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x;
+                            if (p1x == p2x || x <=xints){
+                                inside = !inside;
+                            }
+
+                        }
+                    }
+                }
+            }
+            p1x = p2x;
+            p1y = p2y;
+        }
+
+        return inside;
+    }
 }

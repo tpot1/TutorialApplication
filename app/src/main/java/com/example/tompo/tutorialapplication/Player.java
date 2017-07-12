@@ -5,6 +5,8 @@ import android.graphics.BitmapFactory;
 import android.util.DisplayMetrics;
 import android.content.res.Resources;
 import java.util.ArrayList;
+import java.util.Vector;
+
 import android.util.Log;
 
 /**
@@ -12,6 +14,12 @@ import android.util.Log;
  */
 
 public class Player extends SolidObject{
+
+    public float playerWidth = 140;
+    public float playerLength = 215;
+
+    public float screenWidth;
+    public float screenHeight;
 
     public Bitmap bitmap;
 
@@ -22,13 +30,13 @@ public class Player extends SolidObject{
     public boolean isDashing = false;
 
     public double dragThreshold;
-    public float dashLength = 500;
+    public float dashLength = 800;
 
 
     // He can walk at 800 pixels per second
     float walkSpeedPerSecond = 800;
 
-    float dashSpeedPerSecond = 800;
+    float dashSpeedPerSecond = 3200;
 
 
     public float totalDashX = 0;
@@ -37,15 +45,21 @@ public class Player extends SolidObject{
     public float dashedX = 0;
     public float dashedY = 0;
 
-    public Player(float x, float y, float width, float length, Resources r, int bitmapID, double dragThreshold){
+    public Player(float screenWidth, float screenHeight, Resources r, int bitmapID){
 
-        this.setBoundaries(x,y,width,length);
+        this.screenHeight = screenHeight;
+        this.screenWidth = screenWidth;
 
-        this.dragThreshold = dragThreshold;
+        float playerX = screenWidth/2;
+        float playerY = screenHeight - (screenHeight/3);
+
+        this.setBoundaries(playerX, playerY, playerWidth, playerLength);
+
+        this.dragThreshold = (Math.sqrt((screenWidth * screenWidth) + (screenHeight * screenHeight)) / 8);
 
         // Load Bob from his .png file
         Bitmap rawBob = BitmapFactory.decodeResource(r, bitmapID);
-        bitmap = Bitmap.createScaledBitmap(rawBob, (int) width, (int) length, false);
+        bitmap = Bitmap.createScaledBitmap(rawBob, (int) playerWidth, (int) playerLength, false);
 
     }
 
@@ -58,7 +72,7 @@ public class Player extends SolidObject{
         return dragDist > dragThreshold;
     }
 
-    public void dash(float fps) {
+    public void dash(float fps, ArrayList<SolidObject> objects) {
 
         if(!(this.totalDashX == 0 && this.totalDashY == 0) && isDashing){
             //XY realXY = bob.checkCollision(newXY.x, newXY.y, solidObjects);
@@ -73,10 +87,8 @@ public class Player extends SolidObject{
                 dashY = -dashY;
             }
 
-            this.x += dashX;
+            this.move(new XY(this.x + dashX, this.y + dashY), objects);
             dashedX += dashX;
-
-            this.y += dashY;
             dashedY += dashY;
 
             if(Math.abs(dashedX) >= Math.abs(totalDashX) && Math.abs(dashedY) >= Math.abs(totalDashY)){
@@ -90,6 +102,51 @@ public class Player extends SolidObject{
             }
         }
 
+    }
+
+
+    //move function for player that does collision detection
+    // move(XY current, XY new, ArrayList objects)
+    // checks if the point you are moving to is within the object
+    // if so, extrapolate backwards to the nearest possible point along the same trajectory
+    public XY move(XY newPos, ArrayList<SolidObject> objects){
+        XY validPos = newPos;
+        /*if(validPos.x < 0){
+            validPos.x = 0;
+        }
+        else if(validPos.x + this.playerWidth > screenWidth){
+            validPos.x = screenWidth - this.playerWidth;
+        }
+
+        if(validPos.y < 0){
+            validPos.y = 0;
+        }
+        else if(validPos.y + this.playerLength > screenHeight){
+            validPos.y = screenHeight - this.playerLength;
+        }*/
+
+        for(SolidObject o : objects){
+            if(o.contains(validPos.x, validPos.y) || o.contains(validPos.x + this.playerWidth, validPos.y) || o.contains(validPos.x + this.playerWidth, validPos.y - this.playerLength) || o.contains(validPos.x, validPos.y - this.playerLength) ){
+                validPos = new XY(this.x, this.y);
+                /*Log.d("TRP", "TEST");
+
+                float moveX = newPos.x - this.x;
+                float moveY = newPos.y - this.y;
+
+                for(XY v : o.vertices){
+                    if(this.x > v.x && newPos.x < v.x || this.x < v.x && newPos.x > v.x){
+                        newPos.x = v.x;
+                    }
+                    if(this.y > v.y && newPos.y < v.y || this.y < v.y && newPos.y > v.y){
+                        newPos.y = v.y;
+                    }
+                }*/
+            }
+        }
+        this.x = validPos.x;
+        this.y = validPos.y;
+
+        return validPos;
     }
 
     public XY checkCollision(float newX, float newY, ArrayList<SolidObject> objects){
