@@ -81,6 +81,8 @@ public class SimpleGameEngine extends Activity {
 
         public ArrayList<SolidObject> solidObjects = new ArrayList<>();
 
+        public ArrayList<Meteor> meteors = new ArrayList<>();
+
         Player bob;
         Platform platformMain;
 
@@ -117,6 +119,11 @@ public class SimpleGameEngine extends Activity {
 
             // Create bottom platform
             platformMain = new Platform(screenWidth/6, 6 * screenHeight/8, 4 * screenWidth/6, screenHeight/20, this.getResources(), R.drawable.platform_test);
+
+
+            Meteor m1 = new Meteor(screenWidth, screenHeight, this.getResources(), R.drawable.bob_test);
+            meteors.add(m1);
+            solidObjects.add(m1);
 
             solidObjects.add(platformMain);
 
@@ -169,7 +176,14 @@ public class SimpleGameEngine extends Activity {
             // Apply gravity
             if(bob.active){
                 bob.move(new XY(bob.x, bob.y + (gravitySpeed / fps)), solidObjects);
+
+                for(Meteor m : meteors){
+                    m.move(bob, fps, solidObjects);
+                }
             }
+
+
+
 
 
 
@@ -202,6 +216,8 @@ public class SimpleGameEngine extends Activity {
                 // Draw the main platform
                 canvas.drawBitmap(platformMain.bitmap, platformMain.x, platformMain.y - platformMain.length, paint);
 
+
+                canvas.drawCircle(meteors.get(0).x, meteors.get(0).y, meteors.get(0).width, paint);
 
                 // Draw everything to the screen
                 // and unlock the drawing surface
