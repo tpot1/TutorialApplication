@@ -82,6 +82,8 @@ public class SimpleGameEngine extends Activity {
         public ArrayList<SolidObject> solidObjects = new ArrayList<>();
 
         public ArrayList<Meteor> meteors = new ArrayList<>();
+        long previousMeteorTime = 0;
+        long baseMeteorTimeThresh = 5000;
 
         Player bob;
         Platform platformMain;
@@ -118,12 +120,8 @@ public class SimpleGameEngine extends Activity {
             bob = new Player(screenWidth, screenHeight, this.getResources(), R.drawable.bob_test);
 
             // Create bottom platform
-            platformMain = new Platform(screenWidth/6, 6 * screenHeight/8, 4 * screenWidth/6, screenHeight/20, this.getResources(), R.drawable.platform_test);
+            platformMain = new Platform(screenWidth/6, screenHeight, 4 * screenWidth/6, screenHeight/5, this.getResources(), R.drawable.platform_test);
 
-
-            Meteor m1 = new Meteor(screenWidth, screenHeight, this.getResources(), R.drawable.bob_test);
-            meteors.add(m1);
-            solidObjects.add(m1);
 
             solidObjects.add(platformMain);
 
@@ -137,6 +135,8 @@ public class SimpleGameEngine extends Activity {
 
                 // Capture the current time in milliseconds in startFrameTime
                 long startFrameTime = System.currentTimeMillis();
+
+                createMeteor();
 
                 // Update the frame
                 update();
@@ -178,7 +178,13 @@ public class SimpleGameEngine extends Activity {
                 bob.move(new XY(bob.x, bob.y + (gravitySpeed / fps)), solidObjects);
 
                 for(Meteor m : meteors){
-                    m.move(bob, fps, solidObjects);
+                    if(m.exploded){
+                        meteors.remove(m);
+                        solidObjects.remove(m);
+                    }
+                    else {
+                        m.move(bob, fps, solidObjects);
+                    }
                 }
             }
 
@@ -216,8 +222,9 @@ public class SimpleGameEngine extends Activity {
                 // Draw the main platform
                 canvas.drawBitmap(platformMain.bitmap, platformMain.x, platformMain.y - platformMain.length, paint);
 
-
-                canvas.drawCircle(meteors.get(0).x, meteors.get(0).y, meteors.get(0).width, paint);
+                for(Meteor m : meteors) {
+                    canvas.drawCircle(m.x, m.y, m.width, paint);
+                }
 
                 // Draw everything to the screen
                 // and unlock the drawing surface
@@ -244,6 +251,19 @@ public class SimpleGameEngine extends Activity {
             playing = true;
             gameThread = new Thread(this);
             gameThread.start();
+        }
+
+
+        public void createMeteor(){
+            long currentTime = System.currentTimeMillis();
+
+            if(currentTime - previousMeteorTime > baseMeteorTimeThresh && bob.active) {
+                Meteor m1 = new Meteor(screenWidth, screenHeight, this.getResources(), R.drawable.bob_test);
+                meteors.add(m1);
+                solidObjects.add(m1);
+                previousMeteorTime = currentTime;
+            }
+
         }
 
 

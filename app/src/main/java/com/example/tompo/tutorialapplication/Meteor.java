@@ -28,6 +28,8 @@ public class Meteor extends SolidObject {
 
     private float movedX = 0, movedY = 0;
 
+    public boolean exploded = false;
+
     public Meteor(float screenWidth, float screenLength, Resources r, int bitmapID){
 
         rand = new Random();
@@ -35,14 +37,14 @@ public class Meteor extends SolidObject {
         this.screenLength = screenLength;
         this.screenWidth = screenWidth;
 
-        float startX = rand.nextInt((int) screenWidth); //screenWidth / 2;
+        float startX = (screenWidth / 2) + rand.nextInt((int)screenWidth / 4) - rand.nextInt((int)screenWidth / 4);
         float startY = 0;
         float width = 100;
 
-        endX = startX + rand.nextInt((int) screenWidth / 2) - screenWidth/4;
-        meteorSpeedPerSecond = 1000 + rand.nextInt(1000);
+        endX = (screenWidth / 2) + rand.nextInt((int)screenWidth / 4) - rand.nextInt((int)screenWidth / 4);
+        meteorSpeedPerSecond = 1000 + rand.nextInt(500);
 
-        totalX = this.x - endX;
+        totalX = startX - endX;
         totalY = screenLength;
 
         this.setBoundaries(startX,startY,width,width);
@@ -75,6 +77,7 @@ public class Meteor extends SolidObject {
         }
 
         if(Math.abs(movedX) >= Math.abs(totalX) && Math.abs(movedY) >= Math.abs(totalY)){
+            exploded = true;
             // Meteor has finished its descent - explode into zombies?
         }
         else {
