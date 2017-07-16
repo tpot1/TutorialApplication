@@ -25,7 +25,7 @@ public abstract class SolidObject{
         vertices = new XY[] {new XY(x,y), new XY(x + width, y), new XY(x + width, y - length), new XY(x, y - length) };
     }
 
-    /*public boolean contains(float x, float y){
+    public boolean contains(float x, float y){
         updateVertices();
 
         int i;
@@ -38,9 +38,11 @@ public abstract class SolidObject{
             }
         }
         return result;
-    }*/
+    }
 
-    public boolean contains(float x, float y) {
+    /*public boolean contains(float x, float y) {
+        this.updateVertices();
+
         int n = vertices.length;
         boolean inside = false;
 
@@ -69,5 +71,5 @@ public abstract class SolidObject{
         }
 
         return inside;
-    }
+    }*/
 }

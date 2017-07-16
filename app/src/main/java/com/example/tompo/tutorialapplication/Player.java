@@ -15,8 +15,8 @@ import android.util.Log;
 
 public class Player extends SolidObject{
 
-    public float playerWidth = 140;
-    public float playerLength = 215;
+    public float playerWidth = 100;
+    public float playerLength = 150;
 
     public float screenWidth;
     public float screenHeight;
@@ -87,7 +87,8 @@ public class Player extends SolidObject{
                 dashY = -dashY;
             }
 
-            this.move(new XY(this.x + dashX, this.y + dashY), objects);
+            this.move(new XY(this.x + dashX, this.y), objects);
+            this.move(new XY(this.x, this.y + dashY), objects);
             dashedX += dashX;
             dashedY += dashY;
 
@@ -105,12 +106,80 @@ public class Player extends SolidObject{
     }
 
 
-    //move function for player that does collision detection
-    // move(XY current, XY new, ArrayList objects)
-    // checks if the point you are moving to is within the object
-    // if so, extrapolate backwards to the nearest possible point along the same trajectory
+    // 1: determine which direction we are moving (positive or negative x? positive or negative y?)
+    // 2: determine which edges we need to check when moving in this direction (i.e. if positive x, check right edge)
+    // 3: find distance to be moved in x and y
+    // 4: try moving entire distance and check for collisions on valid edges
+    // 5: if collision occurred, gradually reduce distance until no collision or no movement
     public XY move(XY newPos, ArrayList<SolidObject> objects){
+
         XY validPos = newPos;
+
+        if(validPos.x < 0){
+            validPos.x = 0;
+        }
+        else if(validPos.x + this.playerWidth > screenWidth){
+            validPos.x = screenWidth - this.playerWidth;
+        }
+
+        if(validPos.y < 0){
+            validPos.y = 0;
+        }
+        else if(validPos.y + this.playerLength > screenHeight){
+            validPos.y = screenHeight - this.playerLength;
+        }
+
+        float dx = validPos.x - this.x;
+        float dy = validPos.y - this.y;
+
+        ArrayList<XY> collisionEdges = new ArrayList<>();
+
+        if(dx < 0){
+
+            float edge = this.vertices[0].y - this.vertices[3].y;
+            for(int i = 0; i < edge; i+=5){
+                collisionEdges.add(new XY(this.x + dx, this.y + dy - i));
+            }
+        }
+        else if(dx > 0){
+
+            float edge = this.vertices[1].y - this.vertices[2].y;
+            for(int i = 0; i < edge; i+=5){
+                collisionEdges.add(new XY(this.x + this.width + dx, this.y + dy - i));
+            }
+        }
+
+        if(dy < 0){
+            float edge = this.vertices[2].x - this.vertices[3].x;
+            for(int i = 0; i < edge; i++){
+                collisionEdges.add(new XY(this.x + dx + i, this.y - this.length + dy));
+            }
+        }
+        else if(dy > 0){
+            float edge = this.vertices[1].x - this.vertices[0].x;
+            for(int i = 0; i < edge; i++){
+                collisionEdges.add(new XY(this.x + dx + i, this.y + dy));
+            }
+        }
+
+        for(SolidObject o : objects){
+            for(XY point : collisionEdges){
+                if(o.contains(point.x, point.y)){
+                    return new XY(this.x, this.y);
+                }
+            }
+        }
+
+        this.x = validPos.x;
+        this.y = validPos.y;
+
+        this.updateVertices();
+
+        return validPos;
+
+
+
+
         /*if(validPos.x < 0){
             validPos.x = 0;
         }
@@ -123,12 +192,20 @@ public class Player extends SolidObject{
         }
         else if(validPos.y + this.playerLength > screenHeight){
             validPos.y = screenHeight - this.playerLength;
-        }*/
+        }
 
         for(SolidObject o : objects){
-            if(o.contains(validPos.x, validPos.y) || o.contains(validPos.x + this.playerWidth, validPos.y) || o.contains(validPos.x + this.playerWidth, validPos.y - this.playerLength) || o.contains(validPos.x, validPos.y - this.playerLength) ){
+            // Loop over the 4 vertices of the player
+            for(int i = 0; i < 4; i++){
+                float dx = this.vertices[i].x - this.vertices[(i+1)%4].x;
+                float dy = this.vertices[i].x - this.vertices[(i+1)%4].x;
+                for(int j = 0; j < dx; j++){
+                    if(o.contains())
+                }
+            }
+            /*if(o.contains(validPos.x, validPos.y) || o.contains(validPos.x + this.playerWidth, validPos.y) || o.contains(validPos.x + this.playerWidth, validPos.y - this.playerLength) || o.contains(validPos.x, validPos.y - this.playerLength) ){
                 validPos = new XY(this.x, this.y);
-                /*Log.d("TRP", "TEST");
+                Log.d("TRP", "TEST");
 
                 float moveX = newPos.x - this.x;
                 float moveY = newPos.y - this.y;
@@ -140,13 +217,13 @@ public class Player extends SolidObject{
                     if(this.y > v.y && newPos.y < v.y || this.y < v.y && newPos.y > v.y){
                         newPos.y = v.y;
                     }
-                }*/
+                }
             }
         }
         this.x = validPos.x;
         this.y = validPos.y;
 
-        return validPos;
+        return validPos;*/
     }
 
     public XY checkCollision(float newX, float newY, ArrayList<SolidObject> objects){

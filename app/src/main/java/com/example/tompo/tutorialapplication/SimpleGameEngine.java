@@ -114,7 +114,7 @@ public class SimpleGameEngine extends Activity {
             bob = new Player(screenWidth, screenHeight, this.getResources(), R.drawable.bob_test);
 
             // Create bottom platform
-            platformMain = new Platform(screenWidth/8, 4 * screenHeight/5, 6 * screenWidth/8, screenHeight/10, this.getResources(), R.drawable.platform_test);
+            platformMain = new Platform(screenWidth/6, 6 * screenHeight/8, 4 * screenWidth/6, screenHeight/20, this.getResources(), R.drawable.platform_test);
 
             solidObjects.add(platformMain);
 
@@ -190,10 +190,10 @@ public class SimpleGameEngine extends Activity {
                 canvas.drawText("FPS:" + fps, 20, 40, paint);
 
                 // Draw bob at bobXPosition, 200 pixels
-                canvas.drawBitmap(bob.bitmap, bob.x, bob.y, paint);
+                canvas.drawBitmap(bob.bitmap, bob.x, bob.y - bob.length, paint);
 
                 // Draw the main platform
-                canvas.drawBitmap(platformMain.bitmap, platformMain.x, platformMain.y, paint);
+                canvas.drawBitmap(platformMain.bitmap, platformMain.x, platformMain.y - platformMain.length, paint);
 
 
                 // Draw everything to the screen
