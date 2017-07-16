@@ -28,7 +28,8 @@ public class Meteor extends SolidObject {
 
     private float movedX = 0, movedY = 0;
 
-    public boolean exploded = false;
+    public boolean expired = false;
+    public boolean hitPlayer = false;
 
     public Meteor(float screenWidth, float screenLength, Resources r, int bitmapID){
 
@@ -77,7 +78,7 @@ public class Meteor extends SolidObject {
         }
 
         if(Math.abs(movedX) >= Math.abs(totalX) && Math.abs(movedY) >= Math.abs(totalY)){
-            exploded = true;
+            expired = true;
             // Meteor has finished its descent - explode into zombies?
         }
         else {
@@ -113,6 +114,7 @@ public class Meteor extends SolidObject {
         for (XY point : collisionEdges){
             if(this.contains(point.x, point.y)){
                 //TODO - code for when meteor hits player
+                hitPlayer = true;
                 Log.d("TRP", "METEOR STRIKE");
             }
         }
