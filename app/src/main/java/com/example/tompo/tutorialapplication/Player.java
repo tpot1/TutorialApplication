@@ -29,6 +29,8 @@ public class Player extends SolidObject{
 
     public boolean isDashing = false;
 
+    public boolean active = false;
+
     public double dragThreshold;
     public float dashLength = 800;
 
@@ -113,6 +115,8 @@ public class Player extends SolidObject{
     // 5: if collision occurred, gradually reduce distance until no collision or no movement
     public XY move(XY newPos, ArrayList<SolidObject> objects){
 
+        this.active = true;
+
         XY validPos = newPos;
 
         if(validPos.x < 0){
@@ -122,11 +126,11 @@ public class Player extends SolidObject{
             validPos.x = screenWidth - this.playerWidth;
         }
 
-        if(validPos.y < 0){
-            validPos.y = 0;
+        if(validPos.y - this.playerLength < 0){
+            validPos.y = this.playerLength;
         }
-        else if(validPos.y + this.playerLength > screenHeight){
-            validPos.y = screenHeight - this.playerLength;
+        else if(validPos.y > screenHeight){
+            validPos.y = screenHeight;
         }
 
         float dx = validPos.x - this.x;

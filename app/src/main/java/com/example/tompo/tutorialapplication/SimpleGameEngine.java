@@ -84,6 +84,8 @@ public class SimpleGameEngine extends Activity {
         Player bob;
         Platform platformMain;
 
+        float gravitySpeed = 600;
+
         float screenHeight, screenWidth;
 
         boolean dragging = false;
@@ -162,6 +164,11 @@ public class SimpleGameEngine extends Activity {
             }
             else if(bob.isMovingLeft){
                 bob.move(new XY(bob.x - (bob.walkSpeedPerSecond / fps), bob.y), solidObjects);
+            }
+
+            // Apply gravity
+            if(bob.active){
+                bob.move(new XY(bob.x, bob.y + (gravitySpeed / fps)), solidObjects);
             }
 
 
