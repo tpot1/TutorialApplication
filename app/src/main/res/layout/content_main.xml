@@ -4,49 +4,40 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="horizontal"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.tompo.tutorialapplication.MainActivity"
     tools:showIn="@layout/activity_main">
 
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Yo yo yo,
-        The end is nigh,
-        Meteors are falling
-        from the Sky!
-
-        Tap to the left
-        and swipe to the right
-        to dodge
-        or you will surely die!"
+        android:text="Yo yo yo, \n The end is nigh, \n Meteors are falling \n from the Sky! \n \n Tap to the left \n and swipe to the right \n to dodge \n or you will surely die!"
+        android:textSize="15dp"
         android:textAlignment="center"
         android:textAllCaps="true"
-        android:textSize="25sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.166" />
+        />
 
     <Button
         android:id="@+id/play"
         style="@style/Widget.AppCompat.Button.Colored"
-        android:layout_width="100dp"
-        android:layout_height="122dp"
+        android:layout_width="wrap_content"
+        android:layout_height="120dp"
         android:background="@drawable/bob"
-        android:elevation="0dp"
         android:fontFamily="sans-serif"
         android:text="PLAY!"
         android:textAlignment="center"
         android:textColor="@color/colorPrimaryDark"
-        android:textSize="30sp"
         android:textStyle="bold"
         android:typeface="monospace"
+        android:textSize="50dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+
 
  />
 

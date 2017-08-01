@@ -402,9 +402,7 @@ public class SimpleGameEngine extends Activity {
                     this.dragging = false;
 
                     break;
-
                 
-
 
             }
             return true;
