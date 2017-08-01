@@ -85,6 +85,10 @@ public class SimpleGameEngine extends Activity {
         public ArrayList<Meteor> meteors = new ArrayList<>();
         long previousMeteorTime = 0;
         long baseMeteorTimeThresh = 5000;
+        long currentMeteorTimeThresh = baseMeteorTimeThresh;
+        long minimumMeteorTimeThresh = 1000;
+
+        public ArrayList<Meteor> expiredMeteors = new ArrayList<>();
 
         Player bob;
         Platform platformMain;
@@ -179,17 +183,19 @@ public class SimpleGameEngine extends Activity {
                 bob.move(new XY(bob.x, bob.y + (gravitySpeed / fps)), solidObjects);
 
                 for(Meteor m : meteors){
+                    if(m.expired){
+                        expiredMeteors.add(m);
+                    }
                     if(m.hitPlayer){
                         startActivity(new Intent(SimpleGameEngine.this, EndScreenActivity.class));
-                    }
-                    else if(m.expired){
-                        meteors.remove(m);
-                        solidObjects.remove(m);
                     }
                     else {
                         m.move(bob, fps, solidObjects);
                     }
                 }
+
+                meteors.removeAll(expiredMeteors);
+                expiredMeteors.clear();
             }
 
 
@@ -227,7 +233,12 @@ public class SimpleGameEngine extends Activity {
                 canvas.drawBitmap(platformMain.bitmap, platformMain.x, platformMain.y - platformMain.length, paint);
 
                 for(Meteor m : meteors) {
-                    canvas.drawCircle(m.x, m.y, m.width, paint);
+                    if(m.y < 0){
+                        canvas.drawRect(m.x, 0, m.x + m.width, m.width, paint);
+                    }
+                    else {
+                        canvas.drawCircle(m.x, m.y, m.width, paint);
+                    }
                 }
 
                 // Draw everything to the screen
@@ -261,11 +272,15 @@ public class SimpleGameEngine extends Activity {
         public void createMeteor(){
             long currentTime = System.currentTimeMillis();
 
-            if(currentTime - previousMeteorTime > baseMeteorTimeThresh && bob.active) {
-                Meteor m1 = new Meteor(screenWidth, screenHeight, this.getResources(), R.drawable.bob_test);
+            if(currentTime - previousMeteorTime > currentMeteorTimeThresh && bob.active) {
+                // Meteors keep falling 10% faster
+                currentMeteorTimeThresh = (long) Math.max(0.9 * currentMeteorTimeThresh, minimumMeteorTimeThresh);
+
+                Meteor m1 = new Meteor(screenWidth, screenHeight, bob.x, baseMeteorTimeThresh/currentMeteorTimeThresh, this.getResources(), R.drawable.bob_test);
                 meteors.add(m1);
-                solidObjects.add(m1);
                 previousMeteorTime = currentTime;
+
+
             }
 
         }
@@ -330,8 +345,11 @@ public class SimpleGameEngine extends Activity {
                 case MotionEvent.ACTION_POINTER_UP:
 
                     touchXY.remove(pointerId);
+                    // calls our remove function to remove the pointerID corresponding to the finger
+                    // that has just been lifted from the touchEventStack
                     this.remove(pointerId);
 
+                    // get the ID of the next-most-recent finger still on the screen
                     int activePointerID = touchEventStack.peek();
                     int activePointerIndex = motionEvent.findPointerIndex(activePointerID);
 
@@ -345,15 +363,14 @@ public class SimpleGameEngine extends Activity {
                         bob.isMovingLeft = true;
                         bob.isMovingRight = false;
                     }
+
                     break;
-
-
 
                 // Player has removed all fingers from screen
                 case MotionEvent.ACTION_UP:
 
-                    touchXY.clear();
-                    touchEventStack.clear();
+                    touchXY.remove(pointerId);
+                    this.remove(pointerId);
 
                     if(bob.checkDash(lastXY, xy) && this.dragging){
                         this.dragging = false;
@@ -376,15 +393,7 @@ public class SimpleGameEngine extends Activity {
                         else{
                             bob.totalDashY = -(dy / (dx + dy)) * bob.dashLength;
                         }
-
-                        Log.d("TRP", "TRUE");
                     }
-                    else{
-                        Log.d("TRP", "FALSE");
-                    }
-
-                    Log.d("TRP", "Old X,Y: " + lastXY.x + ", " + lastXY.y);
-                    Log.d("TRP", "New X,Y: " + xy.x + ", " + xy.y);
 
                     // Set isMoving so Bob does not move
                     bob.isMovingLeft = false;
@@ -394,15 +403,7 @@ public class SimpleGameEngine extends Activity {
 
                     break;
 
-                case MotionEvent.ACTION_MOVE:
-
-                    if(bob.checkDash(lastXY, xy)){
-
-                        bob.isMovingLeft = false;
-                        bob.isMovingRight = false;
-
-                        Log.d("TRP", "TRUE");
-                    }
+                
 
 
             }
