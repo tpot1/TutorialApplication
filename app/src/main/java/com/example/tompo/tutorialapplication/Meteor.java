@@ -22,16 +22,19 @@ public class Meteor extends SolidObject {
     public float screenLength, screenWidth;
 
     public float endX;
-    public float meteorSpeedPerSecond;
+    public float meteorVerticalSpeedPerSecond;
 
     private float totalX, totalY;
+    private static float MAX_SPEED_VARIABLE = 2;
+
+    private float totalFallingTime;
 
     private float movedX = 0, movedY = 0;
 
     public boolean expired = false;
     public boolean hitPlayer = false;
 
-    public Meteor(float screenWidth, float screenLength, Resources r, int bitmapID){
+    public Meteor(float screenWidth, float screenLength, float speedVariable, Resources r, int bitmapID){
 
         rand = new Random();
 
@@ -39,14 +42,16 @@ public class Meteor extends SolidObject {
         this.screenWidth = screenWidth;
 
         float startX = (screenWidth / 2) + rand.nextInt((int)screenWidth / 4) - rand.nextInt((int)screenWidth / 4);
-        float startY = 0;
+        float startY = -1500;
         float width = 100;
 
         endX = (screenWidth / 2) + rand.nextInt((int)screenWidth / 4) - rand.nextInt((int)screenWidth / 4);
-        meteorSpeedPerSecond = 1000 + rand.nextInt(500);
+
+        this.meteorVerticalSpeedPerSecond = 800 * Math.min(speedVariable,this.MAX_SPEED_VARIABLE);
+        this.totalFallingTime = (this.screenLength - startY) / (this.meteorVerticalSpeedPerSecond);
 
         totalX = startX - endX;
-        totalY = screenLength;
+        totalY = screenLength - startY;
 
         this.setBoundaries(startX,startY,width,width);
 
@@ -70,12 +75,8 @@ public class Meteor extends SolidObject {
     // Check for collisions with the player as we are going
     public XY move(Player p, float fps, ArrayList<SolidObject> objects){
 
-        float moveX = (this.meteorSpeedPerSecond * (Math.abs(totalX) / (Math.abs(totalX) + Math.abs(totalY)))) / fps;
-        float moveY = (this.meteorSpeedPerSecond * (Math.abs(totalY) / (Math.abs(totalX) + Math.abs(totalY)))) / fps;
-
-        if(totalX < 0){
-            moveX = -moveX;
-        }
+        float moveX = -this.totalX / totalFallingTime / fps;
+        float moveY = this.meteorVerticalSpeedPerSecond / fps;
 
         if(Math.abs(movedX) >= Math.abs(totalX) && Math.abs(movedY) >= Math.abs(totalY)){
             expired = true;
