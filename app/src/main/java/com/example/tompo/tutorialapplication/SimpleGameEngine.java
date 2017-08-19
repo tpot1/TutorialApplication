@@ -87,7 +87,7 @@ public class SimpleGameEngine extends Activity {
         long previousMeteorTime = 0;
         long baseMeteorTimeThresh = 2000;
         long currentMeteorTimeThresh = baseMeteorTimeThresh;
-        long minimumMeteorTimeThresh = 1000;
+        long minimumMeteorTimeThresh = 750;
 
         public ArrayList<Meteor> expiredMeteors = new ArrayList<>();
 
@@ -192,7 +192,9 @@ public class SimpleGameEngine extends Activity {
 
             // Apply gravity
             if(bob.active){
-                bob.move(new XY(bob.x, bob.y + (gravitySpeed / fps)), solidObjects);
+                if(!bob.isDashing) {
+                    bob.move(new XY(bob.x, bob.y + (gravitySpeed / fps)), solidObjects);
+                }
 
                 for(Meteor m : meteors){
                     if(m.expired){

@@ -38,13 +38,13 @@ public class Player extends SolidObject{
     public boolean active = false;
 
     public double dragThreshold;
-    public float dashLength = 800;
+    public float dashLength = 500;
 
 
     // He can walk at 800 pixels per second
     float walkSpeedPerSecond = 500;
 
-    float dashSpeedPerSecond = 1500;
+    float dashSpeedPerSecond = 2000;
 
 
     public float totalDashX = 0;
@@ -63,7 +63,7 @@ public class Player extends SolidObject{
 
         this.setBoundaries(playerX, playerY, playerWidth, playerLength);
 
-        this.dragThreshold = (Math.sqrt((screenWidth * screenWidth) + (screenHeight * screenHeight)) / 8);
+        this.dragThreshold = (Math.sqrt((screenWidth * screenWidth) + (screenHeight * screenHeight)) / 10);
 
         this.bitmapID = bitmapID;
         // Load Bob from his .png file

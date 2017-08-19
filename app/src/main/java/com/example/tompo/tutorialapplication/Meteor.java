@@ -27,7 +27,7 @@ public class Meteor extends SolidObject {
     public float meteorVerticalSpeedPerSecond;
 
     private float totalX, totalY;
-    private static float MAX_SPEED_VARIABLE = (float) 1.2;
+    private static float MAX_SPEED_VARIABLE = (float) 1.4;
 
     private float totalFallingTime;
 
@@ -47,7 +47,7 @@ public class Meteor extends SolidObject {
         float startY = -500;
 
         // ensures the meteor falls close to the player
-        endX = playerX + rand.nextInt((int)screenWidth / 4) - rand.nextInt((int)screenWidth / 4);
+        endX = playerX + rand.nextInt((int)screenWidth / 2) - rand.nextInt((int)screenWidth / 2);
 
         this.meteorVerticalSpeedPerSecond = 600 * Math.min(speedVariable,this.MAX_SPEED_VARIABLE);
         this.totalFallingTime = (this.screenLength - startY) / (this.meteorVerticalSpeedPerSecond);
