@@ -21,7 +21,10 @@ public class Player extends SolidObject{
     public float screenWidth;
     public float screenHeight;
 
-    public Bitmap bitmap;
+    public int bitmapID;
+    public Bitmap frontBitmap;
+    public Bitmap leftBitmap;
+    public Bitmap rightBitmap;
 
     // Bob starts off not moving
     public boolean isMovingLeft = false;
@@ -47,7 +50,7 @@ public class Player extends SolidObject{
     public float dashedX = 0;
     public float dashedY = 0;
 
-    public Player(float screenWidth, float screenHeight, Resources r, int bitmapID){
+    public Player(float screenWidth, float screenHeight, Resources r, int frontID, int leftID, int rightID){
 
         this.screenHeight = screenHeight;
         this.screenWidth = screenWidth;
@@ -59,9 +62,16 @@ public class Player extends SolidObject{
 
         this.dragThreshold = (Math.sqrt((screenWidth * screenWidth) + (screenHeight * screenHeight)) / 8);
 
+        this.bitmapID = bitmapID;
         // Load Bob from his .png file
-        Bitmap rawBob = BitmapFactory.decodeResource(r, bitmapID);
-        bitmap = Bitmap.createScaledBitmap(rawBob, (int) playerWidth, (int) playerLength, false);
+        Bitmap front = BitmapFactory.decodeResource(r, frontID);
+        this.frontBitmap = Bitmap.createScaledBitmap(front, (int) playerWidth, (int) playerLength, false);
+
+        Bitmap left = BitmapFactory.decodeResource(r, leftID);
+        this.leftBitmap = Bitmap.createScaledBitmap(left, (int) playerWidth, (int) playerLength, false);
+
+        Bitmap right = BitmapFactory.decodeResource(r, rightID);
+        this.rightBitmap = Bitmap.createScaledBitmap(right, (int) playerWidth, (int) playerLength, false);
 
     }
 
@@ -182,5 +192,6 @@ public class Player extends SolidObject{
         return validPos;
 
     }
+
 
 }

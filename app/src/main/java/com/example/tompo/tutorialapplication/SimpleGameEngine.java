@@ -1,6 +1,7 @@
 package com.example.tompo.tutorialapplication;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -103,6 +104,8 @@ public class SimpleGameEngine extends Activity {
 
         Map<Integer, XY> touchXY = new HashMap<>();
 
+        Resources resources;
+
         // When the we initialize (call new()) on gameView
         // This special constructor method runs
         public GameView(Context context) {
@@ -121,11 +124,13 @@ public class SimpleGameEngine extends Activity {
             screenHeight = displayMetrics.heightPixels;
             screenWidth = displayMetrics.widthPixels;
 
+            resources = this.getResources();
+
             // Create player (bob)
-            bob = new Player(screenWidth, screenHeight, this.getResources(), R.drawable.bob_test);
+            bob = new Player(screenWidth, screenHeight, resources, R.drawable.player_front, R.drawable.player_left, R.drawable.player_right);
 
             // Create bottom platform
-            platformMain = new Platform(screenWidth/6, screenHeight, 4 * screenWidth/6, screenHeight/5, this.getResources(), R.drawable.platform_test);
+            platformMain = new Platform(screenWidth/6, screenHeight, 4 * screenWidth/6, screenHeight/5, resources, R.drawable.platform_test);
 
 
             solidObjects.add(platformMain);
@@ -227,7 +232,15 @@ public class SimpleGameEngine extends Activity {
                 canvas.drawText("FPS:" + fps, 20, 40, paint);
 
                 // Draw bob at bobXPosition, 200 pixels
-                canvas.drawBitmap(bob.bitmap, bob.x, bob.y - bob.length, paint);
+                if(bob.isMovingLeft) {
+                    canvas.drawBitmap(bob.leftBitmap, bob.x, bob.y - bob.length, paint);
+                }
+                else if(bob.isMovingRight) {
+                    canvas.drawBitmap(bob.rightBitmap, bob.x, bob.y - bob.length, paint);
+                }
+                else{
+                    canvas.drawBitmap(bob.frontBitmap, bob.x, bob.y - bob.length, paint);
+                }
 
                 // Draw the main platform
                 canvas.drawBitmap(platformMain.bitmap, platformMain.x, platformMain.y - platformMain.length, paint);
@@ -276,7 +289,7 @@ public class SimpleGameEngine extends Activity {
                 // Meteors keep falling 10% faster
                 currentMeteorTimeThresh = (long) Math.max(0.9 * currentMeteorTimeThresh, minimumMeteorTimeThresh);
 
-                Meteor m1 = new Meteor(screenWidth, screenHeight, bob.x, baseMeteorTimeThresh/currentMeteorTimeThresh, this.getResources(), R.drawable.bob_test);
+                Meteor m1 = new Meteor(screenWidth, screenHeight, bob.x, baseMeteorTimeThresh/currentMeteorTimeThresh, resources, R.drawable.bob_test);
                 meteors.add(m1);
                 previousMeteorTime = currentTime;
 
