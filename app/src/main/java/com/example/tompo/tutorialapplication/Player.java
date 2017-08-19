@@ -25,6 +25,9 @@ public class Player extends SolidObject{
     public Bitmap frontBitmap;
     public Bitmap leftBitmap;
     public Bitmap rightBitmap;
+    public Bitmap leftBitmap2;
+    public Bitmap rightBitmap2;
+
 
     // Bob starts off not moving
     public boolean isMovingLeft = false;
@@ -39,9 +42,9 @@ public class Player extends SolidObject{
 
 
     // He can walk at 800 pixels per second
-    float walkSpeedPerSecond = 800;
+    float walkSpeedPerSecond = 500;
 
-    float dashSpeedPerSecond = 3200;
+    float dashSpeedPerSecond = 1500;
 
 
     public float totalDashX = 0;
@@ -50,7 +53,7 @@ public class Player extends SolidObject{
     public float dashedX = 0;
     public float dashedY = 0;
 
-    public Player(float screenWidth, float screenHeight, Resources r, int frontID, int leftID, int rightID){
+    public Player(float screenWidth, float screenHeight, Resources r, int frontID, int leftID, int rightID, int leftID2, int rightID2){
 
         this.screenHeight = screenHeight;
         this.screenWidth = screenWidth;
@@ -72,6 +75,12 @@ public class Player extends SolidObject{
 
         Bitmap right = BitmapFactory.decodeResource(r, rightID);
         this.rightBitmap = Bitmap.createScaledBitmap(right, (int) playerWidth, (int) playerLength, false);
+
+        Bitmap left2 = BitmapFactory.decodeResource(r, leftID2);
+        this.leftBitmap2 = Bitmap.createScaledBitmap(left2, (int) playerWidth, (int) playerLength, false);
+
+        Bitmap right2 = BitmapFactory.decodeResource(r, rightID2);
+        this.rightBitmap2 = Bitmap.createScaledBitmap(right2, (int) playerWidth, (int) playerLength, false);
 
     }
 

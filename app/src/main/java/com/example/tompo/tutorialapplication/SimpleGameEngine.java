@@ -85,7 +85,7 @@ public class SimpleGameEngine extends Activity {
 
         public ArrayList<Meteor> meteors = new ArrayList<>();
         long previousMeteorTime = 0;
-        long baseMeteorTimeThresh = 5000;
+        long baseMeteorTimeThresh = 2000;
         long currentMeteorTimeThresh = baseMeteorTimeThresh;
         long minimumMeteorTimeThresh = 1000;
 
@@ -106,6 +106,10 @@ public class SimpleGameEngine extends Activity {
 
         Resources resources;
 
+        public int runFrame = 0;
+
+        public Bitmap meteorBitmap;
+
         // When the we initialize (call new()) on gameView
         // This special constructor method runs
         public GameView(Context context) {
@@ -125,12 +129,13 @@ public class SimpleGameEngine extends Activity {
             screenWidth = displayMetrics.widthPixels;
 
             resources = this.getResources();
+            meteorBitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(resources, R.drawable.meteor), (int) Meteor.width * 2, (int) Meteor.width * 2, false);
 
             // Create player (bob)
-            bob = new Player(screenWidth, screenHeight, resources, R.drawable.player_front, R.drawable.player_left, R.drawable.player_right);
+            bob = new Player(screenWidth, screenHeight, resources, R.drawable.player_front, R.drawable.player_left, R.drawable.player_right, R.drawable.player_left_2, R.drawable.player_right_2);
 
             // Create bottom platform
-            platformMain = new Platform(screenWidth/6, screenHeight, 4 * screenWidth/6, screenHeight/5, resources, R.drawable.platform_test);
+            platformMain = new Platform(screenWidth/6, screenHeight, 4 * screenWidth/6, screenHeight/5, resources, R.drawable.platform);
 
 
             solidObjects.add(platformMain);
@@ -161,6 +166,8 @@ public class SimpleGameEngine extends Activity {
                 if (timeThisFrame > 0) {
                     fps = 1000 / timeThisFrame;
                 }
+
+                runFrame = (int) timeThisFrame % 2;
 
             }
 
@@ -233,10 +240,20 @@ public class SimpleGameEngine extends Activity {
 
                 // Draw bob at bobXPosition, 200 pixels
                 if(bob.isMovingLeft) {
-                    canvas.drawBitmap(bob.leftBitmap, bob.x, bob.y - bob.length, paint);
+                    if (runFrame == 0) {
+                        canvas.drawBitmap(bob.leftBitmap, bob.x, bob.y - bob.length, paint);
+                    }
+                    else{
+                        canvas.drawBitmap(bob.leftBitmap2, bob.x, bob.y - bob.length, paint);
+                    }
                 }
                 else if(bob.isMovingRight) {
-                    canvas.drawBitmap(bob.rightBitmap, bob.x, bob.y - bob.length, paint);
+                    if (runFrame == 0) {
+                        canvas.drawBitmap(bob.rightBitmap, bob.x, bob.y - bob.length, paint);
+                    }
+                    else{
+                        canvas.drawBitmap(bob.rightBitmap2, bob.x, bob.y - bob.length, paint);
+                    }
                 }
                 else{
                     canvas.drawBitmap(bob.frontBitmap, bob.x, bob.y - bob.length, paint);
@@ -250,7 +267,8 @@ public class SimpleGameEngine extends Activity {
                         canvas.drawRect(m.x, 0, m.x + m.width, m.width, paint);
                     }
                     else {
-                        canvas.drawCircle(m.x, m.y, m.width, paint);
+                        //canvas.drawCircle(m.x, m.y, m.width, paint);
+                        canvas.drawBitmap(meteorBitmap, m.x - m.width, m.y - m.width, paint);
                     }
                 }
 

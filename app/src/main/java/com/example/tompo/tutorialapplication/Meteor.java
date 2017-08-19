@@ -16,6 +16,8 @@ import android.util.Log;
 
 public class Meteor extends SolidObject {
 
+    public static float width = 100;
+
     public Bitmap bitmap;
     private Random rand;
 
@@ -25,7 +27,7 @@ public class Meteor extends SolidObject {
     public float meteorVerticalSpeedPerSecond;
 
     private float totalX, totalY;
-    private static float MAX_SPEED_VARIABLE = (float) 1.75;
+    private static float MAX_SPEED_VARIABLE = (float) 1.2;
 
     private float totalFallingTime;
 
@@ -42,13 +44,12 @@ public class Meteor extends SolidObject {
         this.screenWidth = screenWidth;
 
         float startX = (screenWidth / 2) + rand.nextInt((int)screenWidth / 4) - rand.nextInt((int)screenWidth / 4);
-        float startY = -1500;
-        float width = 100;
+        float startY = -500;
 
         // ensures the meteor falls close to the player
         endX = playerX + rand.nextInt((int)screenWidth / 4) - rand.nextInt((int)screenWidth / 4);
 
-        this.meteorVerticalSpeedPerSecond = 1000 * Math.min(speedVariable,this.MAX_SPEED_VARIABLE);
+        this.meteorVerticalSpeedPerSecond = 600 * Math.min(speedVariable,this.MAX_SPEED_VARIABLE);
         this.totalFallingTime = (this.screenLength - startY) / (this.meteorVerticalSpeedPerSecond);
 
         totalX = startX - endX;
